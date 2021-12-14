@@ -3,7 +3,9 @@ Let's you download entire youtube playlists as mp3 files.
 
 This application is basically a script that makes it easier to download entire youtube playlists as mp3 files using youtube-dl. It also supports downloads of single files.
 
-Make sure you have the requirements installed and you should be good to go. When starting the application you will be prompted to provide the link to a playlist and a folder where you want your files to be stored. If you are trying to download the audio of a playlist created by yourself, please make sure the playlist is publicly accessible.
+If you are running the python script through the interpreter make sure you have the requirements installed and you should be good to go. If you are running the application through the binary you do not need to worry about dependencies or your python version. The binary works on its own.
+
+When starting the application you will be prompted to provide the link to a playlist and a folder where you want your files to be stored. If you are trying to download the audio of a playlist created by yourself, please make sure the playlist is publicly accessible.
 
 Legal disclaimer:
 This application should not be used to download copyrighted material without the copyright holder's consent. 
