@@ -3,7 +3,6 @@ from sys import exit
 import os
 import youtube_dl
 import time
-import beepy
 
 
 class MyLogger(object):
@@ -52,6 +51,7 @@ def loadpath(entry):
     entry.insert(0, file_path)
     entry.configure(state='readonly')
 
+
 def cancel(*_):
     exit()
 
@@ -87,6 +87,7 @@ def toggle_state(*_):
         button_ok['state'] = 'disabled'
         button_ok['fg'] = 'grey'
 
+
 url.trace_add('write', toggle_state)
 destination.trace_add('write', toggle_state)
 button_cancel = Button(text="Cancel", command=lambda: cancel(), font="Arial 12")
@@ -98,7 +99,6 @@ window.mainloop()
 
 time.sleep(2)
 download_mp3_playlist(url.get(), destination.get())
-beepy.beep(1)
 
 end_window = Tk()
 end_window.title('Download finished!')
