@@ -7,6 +7,22 @@ If you are running the python script through the interpreter make sure you have 
 
 When starting the application you will be prompted to provide the link to a playlist and a folder where you want your files to be stored. If you are trying to download the audio of a playlist created by yourself, please make sure the playlist is publicly accessible.
 
+![plot](./Screenshots/img.png)
+
+After a playlist has been added and a destination folder has been selected, you can press the "Start" button.
+
+![plot](./Screenshots/img_1.png)
+
+Now the dialog screen will close and the downloads will start.
+
+![plot](./Screenshots/img_2.png)
+
+After the entire playlist has been downloaded you will get a confirmation dialog in which you can select to open the destination folder.
+
+![plot](./Screenshots/img_3.png)
+
+
+
 Legal disclaimer:
 This application should not be used to download copyrighted material without the copyright holder's consent. 
 This application is intended as an easy way to download the audio of
