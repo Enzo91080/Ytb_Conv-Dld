@@ -1,2 +1,5 @@
-**/downloaded_mp3s
+**/build
+**/dist
 **/.idea
+**/__pycache__
+*.spec

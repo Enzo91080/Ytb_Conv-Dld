@@ -1,4 +1,5 @@
 from tkinter import filedialog, Tk, Label, StringVar, Entry, Button, END
+from sys import exit
 import os
 import youtube_dl
 import time
