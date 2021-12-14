@@ -1,8 +1,14 @@
-from tkinter import filedialog, Tk, Label, StringVar, Entry, Button, END
+from tkinter import filedialog, OptionMenu, Tk, Label, StringVar, Entry, Button, END
 from sys import exit
+from enum import Enum
 import os
 import youtube_dl
-import time
+import yt_dlp
+
+
+class YtdlImpl(Enum):
+    yt_dl = 1
+    yt_dlp = 2
 
 
 class MyLogger(object):
@@ -23,9 +29,10 @@ def my_hook(d):
         print(d['filename'], d['_percent_str'], d['_eta_str'])
 
 
-def download_mp3_playlist(playlist_url, destination_path):
+def download_mp3_playlist(playlist_url, destination_path, youtube_dl_impl):
     ydl_opts = {
         'ignoreerrors': True,
+        'WriteThumbnail': True,
         'EmbedThumbnail': True,
         'format': 'bestaudio/best',
         'outtmpl': destination_path + '/%(title)s.%(ext)s',
@@ -40,8 +47,12 @@ def download_mp3_playlist(playlist_url, destination_path):
         'progress_hooks': [my_hook]
     }
 
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([playlist_url])
+    if youtube_dl_impl == YtdlImpl.yt_dlp:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([playlist_url])
+    elif youtube_dl_impl == YtdlImpl.yt_dl:
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([playlist_url])
 
 
 def loadpath(entry):
@@ -62,16 +73,24 @@ window.protocol("WM_DELETE_WINDOW", cancel)
 
 label_url = Label(window, text='YT-playlist Link (or link to single YT-video): ', font="Arial 12", anchor="w")
 label_destination = Label(window, text='Please select target destination folder: ', font="Arial 12", anchor="w")
+label_selection = Label(window, text='Please select youtube-dl implementation: ', font="Arial 12", anchor="w")
 
 label_url.grid(row=0, column=0, padx=5, pady=5, sticky='w')
 label_destination.grid(row=2, column=0, padx=5, pady=5, sticky='w')
+label_selection.grid(row=4, column=0, padx=5, pady=5, sticky='w')
 
 url = StringVar()
 destination = StringVar()
+ytdl_impl = StringVar()
+ytdl_impl.set("youtube-dlp (faster)")
+
 t1 = Entry(window, textvariable=url, font="Arial 10", width=70)
 t2 = Entry(window, textvariable=destination, font="Arial 10", width=70, bg='grey', state='readonly')
 t1.grid(row=1, column=0, padx=5, pady=(0, 30), sticky='w')
 t2.grid(row=3, column=0, padx=5, pady=(0, 30), sticky='w')
+
+selection = OptionMenu(window, ytdl_impl, "youtube-dl", "youtube-dlp (faster)")
+selection.grid(row=5, column=0, padx=5, pady=(0, 30), sticky='w')
 
 button1 = Button(text="Select Destination", command=lambda: loadpath(t2), font="Arial 12")
 button1.grid(row=3, column=1, padx=5, pady=(0, 30), sticky='w')
@@ -92,13 +111,15 @@ url.trace_add('write', toggle_state)
 destination.trace_add('write', toggle_state)
 button_cancel = Button(text="Cancel", command=lambda: cancel(), font="Arial 12")
 
-button_ok.grid(row=4, column=2, padx=5, pady=(0, 30), sticky='w')
-button_cancel.grid(row=4, column=3, padx=5, pady=(0, 30), sticky='w')
+button_ok.grid(row=5, column=2, padx=5, pady=(0, 30), sticky='w')
+button_cancel.grid(row=5, column=3, padx=5, pady=(0, 30), sticky='w')
 
 window.mainloop()
 
-time.sleep(2)
-download_mp3_playlist(url.get(), destination.get())
+if ytdl_impl.get() == "youtube-dlp (faster)":
+    download_mp3_playlist(url.get(), destination.get(), YtdlImpl.yt_dlp)
+elif ytdl_impl.get() == "youtube-dl":
+    download_mp3_playlist(url.get(), destination.get(), YtdlImpl.yt_dl)
 
 end_window = Tk()
 end_window.title('Download finished!')
