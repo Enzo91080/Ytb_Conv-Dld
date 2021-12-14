@@ -1,5 +1,5 @@
 # Youtube MP3 Playlist Downloader
-Let's you download entire youtube playlists as mp3 files (currently Windows + Chrome only)
+Let's you download entire youtube playlists as mp3 files.
 
 This application is basically a script that makes it easier to download entire youtube playlists as mp3 files using youtube-dl. It also supports downloads of single files.
 
