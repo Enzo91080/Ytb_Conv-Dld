@@ -1,1 +1,3 @@
+beepy==1.0.7
+simpleaudio==1.0.4
 youtube-dl==2021.6.6
