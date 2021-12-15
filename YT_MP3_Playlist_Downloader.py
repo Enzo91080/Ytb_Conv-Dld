@@ -1,4 +1,4 @@
-from tkinter import filedialog, OptionMenu, Tk, Label, StringVar, Entry, Button, END
+import PySimpleGUI as sg
 from sys import exit
 from enum import Enum
 import os
@@ -18,7 +18,8 @@ class MyLogger(object):
     def warning(self, msg):
         pass
 
-    def error(self, msg):
+    @staticmethod
+    def error(msg):
         print(msg)
 
 
@@ -55,89 +56,93 @@ def download_mp3_playlist(playlist_url, destination_path, youtube_dl_impl):
             ydl.download([playlist_url])
 
 
-def loadpath(entry):
-    file_path = filedialog.askdirectory()
-    entry.configure(state='normal')
-    entry.delete(0, END)
-    entry.insert(0, file_path)
-    entry.configure(state='readonly')
+def loadpath():
+    file_path = sg.filedialog.askdirectory()
+    return file_path
 
 
 def cancel(*_):
     exit()
 
 
-window = Tk()
-window.title("Youtube MP3 Playlist Downloader")
-window.protocol("WM_DELETE_WINDOW", cancel)
-
-label_url = Label(window, text='YT-playlist Link (or link to single YT-video): ', font="Arial 12", anchor="w")
-label_destination = Label(window, text='Please select target destination folder: ', font="Arial 12", anchor="w")
-label_selection = Label(window, text='Please select youtube-dl implementation: ', font="Arial 12", anchor="w")
-
-label_url.grid(row=0, column=0, padx=5, pady=5, sticky='w')
-label_destination.grid(row=2, column=0, padx=5, pady=5, sticky='w')
-label_selection.grid(row=4, column=0, padx=5, pady=5, sticky='w')
-
-url = StringVar()
-destination = StringVar()
-ytdl_impl = StringVar()
-ytdl_impl.set("youtube-dlp (faster)")
-
-t1 = Entry(window, textvariable=url, font="Arial 10", width=70)
-t2 = Entry(window, textvariable=destination, font="Arial 10", width=70, bg='grey', state='readonly')
-t1.grid(row=1, column=0, padx=5, pady=(0, 30), sticky='w')
-t2.grid(row=3, column=0, padx=5, pady=(0, 30), sticky='w')
-
-selection = OptionMenu(window, ytdl_impl, "youtube-dl", "youtube-dlp (faster)")
-selection.grid(row=5, column=0, padx=5, pady=(0, 30), sticky='w')
-
-button1 = Button(text="Select Destination", command=lambda: loadpath(t2), font="Arial 12")
-button1.grid(row=3, column=1, padx=5, pady=(0, 30), sticky='w')
-
-button_ok = Button(text="Start", command=lambda: window.destroy(), fg='grey', state='disabled', font="Arial 12")
-
-
-def toggle_state(*_):
-    if url.get() and destination.get():
-        button_ok['state'] = 'normal'
-        button_ok['fg'] = 'black'
-    else:
-        button_ok['state'] = 'disabled'
-        button_ok['fg'] = 'grey'
-
-
-url.trace_add('write', toggle_state)
-destination.trace_add('write', toggle_state)
-button_cancel = Button(text="Cancel", command=lambda: cancel(), font="Arial 12")
-
-button_ok.grid(row=5, column=2, padx=5, pady=(0, 30), sticky='w')
-button_cancel.grid(row=5, column=3, padx=5, pady=(0, 30), sticky='w')
-
-window.mainloop()
-
-if ytdl_impl.get() == "youtube-dlp (faster)":
-    download_mp3_playlist(url.get(), destination.get(), YtdlImpl.yt_dlp)
-elif ytdl_impl.get() == "youtube-dl":
-    download_mp3_playlist(url.get(), destination.get(), YtdlImpl.yt_dl)
-
-end_window = Tk()
-end_window.title('Download finished!')
-
-label_end = Label(end_window, text='Your playlist was downloaded successfully to the designated location.',
-                  font="Arial 13")
-label_end.grid(row=0, column=0, padx=10, pady=10)
-
-button_finish = Button(text="Close", command=lambda: cancel(), font="Arial 13")
-button_finish.grid(row=1, column=1, padx=5, pady=10)
-
-
-def open_and_exit():
-    os.system("start " + destination.get())
+def open_and_exit(url_destination):
+    os.system('start ' + url_destination)
     exit()
 
 
-button_finish = Button(text="Close and open folder", command=lambda: open_and_exit(), font="Arial 13")
-button_finish.grid(row=1, column=2, padx=5, pady=10)
+def main():
+    sg.theme('DarkRed')
 
-end_window.mainloop()
+    key_yt_url = 'yt_url'
+    key_path = 'path'
+    key_start_button = 'key_start_button'
+    key_is_yt_dl = 'youtube-dl'
+    key_is_yt_dlp = 'youtube-dlp (faster)'
+
+    layout = [
+        [sg.Text('YT-playlist Link (or link to single YT-video):')],
+        [sg.Input(key=key_yt_url, size=(60, 1), enable_events=True)],
+        [sg.Text('')],
+        [sg.Text('Please select the destination folder of your downloads:')],
+        [sg.Input(key=key_path, size=(60, 1), disabled=True, disabled_readonly_background_color='DarkRed',
+                  enable_events=True), sg.Button(button_text="...")],
+        [sg.Text('')],
+        [sg.Text('Please select a youtube-dl implementation:')],
+        [sg.Radio(key_is_yt_dl, "RADIO1", default=False, key=key_is_yt_dl, enable_events=True)],
+        [sg.Radio(key_is_yt_dlp, "RADIO1", default=True, key=key_is_yt_dlp, enable_events=True)],
+        [sg.Text('')],
+        [sg.Button('Start', disabled=True, key=key_start_button, enable_events=True),
+         sg.Button('Cancel')]
+    ]
+    window = sg.Window('Youtube MP3 Playlist Downloader', layout)
+
+    def check_if_button_should_be_enabled():
+        if window.Element(key_path).get() and window.Element(key_yt_url).get():
+            return True
+        else:
+            return False
+
+    while True:
+        event, values = window.read()
+
+        yt_url = window.Element(key_yt_url).get()
+        path = window.Element(key_path).get()
+        if window.Element(key_is_yt_dl).get() is True:
+            yt_dl_impl = key_is_yt_dl
+        else:
+            yt_dl_impl = key_is_yt_dlp
+
+        if event in (sg.WIN_CLOSED, 'Exit', 'Cancel'):
+            cancel()
+        elif event == key_yt_url:
+            window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
+        elif event == '...':
+            window.Element(key_path).update(loadpath())
+            window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
+        elif event == key_start_button:
+            window.close()
+            break
+
+    if yt_dl_impl == key_is_yt_dlp:
+        download_mp3_playlist(yt_url, path, YtdlImpl.yt_dlp)
+    elif yt_dl_impl == key_is_yt_dl:
+        download_mp3_playlist(yt_url, path, YtdlImpl.yt_dl)
+
+    layout_2 = [
+        [sg.Text('Your video was successfully downloaded!')],
+        [sg.Button('Close'), sg.Button('Close and open folder')]
+    ]
+
+    window = sg.Window("Download finished!", layout_2)
+
+    while True:
+        event, values = window.read()
+
+        if event in (sg.WIN_CLOSED, 'Exit', 'Close'):
+            cancel()
+        elif event == 'Close and open folder':
+            open_and_exit(path)
+
+
+if __name__ == '__main__':
+    main()
