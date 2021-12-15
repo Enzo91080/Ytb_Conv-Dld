@@ -12,10 +12,14 @@ class YtdlImpl(Enum):
 
 
 class MyLogger(object):
-    def debug(self, msg):
+    @staticmethod
+    def debug(msg):
+        print(msg)
         pass
 
-    def warning(self, msg):
+    @staticmethod
+    def warning(msg):
+        print(msg)
         pass
 
     @staticmethod
@@ -107,10 +111,7 @@ def main():
 
         yt_url = window.Element(key_yt_url).get()
         path = window.Element(key_path).get()
-        if window.Element(key_is_yt_dl).get() is True:
-            yt_dl_impl = key_is_yt_dl
-        else:
-            yt_dl_impl = key_is_yt_dlp
+        use_yt_dl_over_dlp = window.Element(key_is_yt_dl).get()
 
         if event in (sg.WIN_CLOSED, 'Exit', 'Cancel'):
             cancel()
@@ -123,10 +124,10 @@ def main():
             window.close()
             break
 
-    if yt_dl_impl == key_is_yt_dlp:
-        download_mp3_playlist(yt_url, path, YtdlImpl.yt_dlp)
-    elif yt_dl_impl == key_is_yt_dl:
+    if use_yt_dl_over_dlp:
         download_mp3_playlist(yt_url, path, YtdlImpl.yt_dl)
+    else:
+        download_mp3_playlist(yt_url, path, YtdlImpl.yt_dlp)
 
     layout_2 = [
         [sg.Text('Your video was successfully downloaded!')],
