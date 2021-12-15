@@ -19,7 +19,7 @@ Now the dialog screen will close and the downloads will start.
 
 After the entire playlist has been downloaded you will get a confirmation dialog in which you can select to open the destination folder.
 
-![plot](./Screenshots/img_3.png)
+![plot](./Screenshots/img_3![img.png](img.png)png)
 
 
 
