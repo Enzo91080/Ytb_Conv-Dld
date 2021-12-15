@@ -60,12 +60,12 @@ def download_mp3_playlist(playlist_url, destination_path, youtube_dl_impl):
             ydl.download([playlist_url])
 
 
-def loadpath():
+def load_path():
     file_path = sg.filedialog.askdirectory()
     return file_path
 
 
-def cancel(*_):
+def cancel():
     exit()
 
 
@@ -118,7 +118,7 @@ def main():
         elif event == key_yt_url:
             window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
         elif event == '...':
-            window.Element(key_path).update(loadpath())
+            window.Element(key_path).update(load_path())
             window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
         elif event == key_start_button:
             window.close()
