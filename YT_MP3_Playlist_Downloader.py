@@ -14,13 +14,12 @@ class YtdlImpl(Enum):
 class MyLogger(object):
     @staticmethod
     def debug(msg):
-        print(msg)
+        # needs to be empty, we want to suppress debug outputs
         pass
 
     @staticmethod
     def warning(msg):
         print(msg)
-        pass
 
     @staticmethod
     def error(msg):
