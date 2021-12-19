@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 from sys import exit
 from enum import Enum
+from termcolor import colored
 import os
 import youtube_dl
 import yt_dlp
@@ -28,16 +29,18 @@ class MyLogger(object):
 
 def my_hook(d):
     if d['status'] == 'finished':
-        print('Done downloading, now converting ...')
+        print('Done downloading, now converting ... \n\n')
     if d['status'] == 'downloading':
-        print(d['filename'], d['_percent_str'], d['_eta_str'])
+        progress_counter = int(float(d['_percent_str'][:-1]) / 5)
+        print(colored('[' + u"\u2588" * progress_counter + '-' * (20 - progress_counter) + ']', 'green'), d['filename'],
+              d['_percent_str'], d['_eta_str'])
 
 
 def download_mp3_playlist(playlist_url, destination_path, youtube_dl_impl):
     ydl_opts = {
         'ignoreerrors': True,
         'WriteThumbnail': True,
-        'EmbedThumbnail': True,
+        'download_archive': destination_path + '/already_downloaded_tracks.txt',
         'format': 'bestaudio/best',
         'outtmpl': destination_path + '/%(title)s.%(ext)s',
         'postprocessors': [{
@@ -74,74 +77,79 @@ def open_and_exit(url_destination):
 
 
 def main():
-    sg.theme('DarkRed')
+    while True:
+        sg.theme('DarkRed')
 
-    key_yt_url = 'yt_url'
-    key_path = 'path'
-    key_start_button = 'key_start_button'
-    key_is_yt_dl = 'youtube-dl'
-    key_is_yt_dlp = 'youtube-dlp (faster)'
+        key_yt_url = 'yt_url'
+        key_path = 'path'
+        key_start_button = 'key_start_button'
+        key_is_yt_dl = 'youtube-dl'
+        key_is_yt_dlp = 'youtube-dlp (faster)'
 
-    layout = [
-        [sg.Text('YT-playlist Link (or link to single YT-video):')],
-        [sg.Input(key=key_yt_url, size=(100, 1), enable_events=True)],
-        [sg.Text('')],
-        [sg.Text('Please select the destination folder of your downloads:')],
-        [sg.Input(key=key_path, size=(100, 1), disabled=True, disabled_readonly_background_color='DarkRed',
-                  enable_events=True), sg.Button(button_text="...")],
-        [sg.Text('')],
-        [sg.Text('Please select a youtube-dl implementation:')],
-        [sg.Radio(key_is_yt_dl, "RADIO1", default=False, key=key_is_yt_dl, enable_events=True)],
-        [sg.Radio(key_is_yt_dlp, "RADIO1", default=True, key=key_is_yt_dlp, enable_events=True)],
-        [sg.Text('')],
-        [sg.Button('Start', disabled=True, key=key_start_button, enable_events=True),
-         sg.Button('Cancel')]
-    ]
-    window = sg.Window('Youtube MP3 Playlist Downloader', layout)
+        layout = [
+            [sg.Text('YT-playlist Link (or link to single YT-video):')],
+            [sg.Input(key=key_yt_url, size=(100, 1), enable_events=True)],
+            [sg.Text('')],
+            [sg.Text('Please select the destination folder of your downloads:')],
+            [sg.Input(key=key_path, size=(100, 1), disabled=True, disabled_readonly_background_color='DarkRed',
+                      enable_events=True), sg.Button(button_text="...")],
+            [sg.Text('')],
+            [sg.Text('Please select a youtube-dl implementation:')],
+            [sg.Radio(key_is_yt_dl, "RADIO1", default=False, key=key_is_yt_dl, enable_events=True)],
+            [sg.Radio(key_is_yt_dlp, "RADIO1", default=True, key=key_is_yt_dlp, enable_events=True)],
+            [sg.Text('')],
+            [sg.Button('Start', disabled=True, key=key_start_button, enable_events=True),
+             sg.Button('Cancel')]
+        ]
+        window = sg.Window('Youtube MP3 Playlist Downloader', layout)
 
-    def check_if_button_should_be_enabled():
-        if window.Element(key_path).get() and window.Element(key_yt_url).get():
-            return True
+        def check_if_button_should_be_enabled():
+            if window.Element(key_path).get() and window.Element(key_yt_url).get():
+                return True
+            else:
+                return False
+
+        while True:
+            event, values = window.read()
+
+            yt_url = window.Element(key_yt_url).get()
+            path = window.Element(key_path).get()
+            use_yt_dl_over_dlp = window.Element(key_is_yt_dl).get()
+
+            if event in (sg.WIN_CLOSED, 'Exit', 'Cancel'):
+                cancel()
+            elif event == key_yt_url:
+                window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
+            elif event == '...':
+                window.Element(key_path).update(load_path())
+                window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
+            elif event == key_start_button:
+                window.close()
+                break
+
+        if use_yt_dl_over_dlp:
+            download_mp3_playlist(yt_url, path, YtdlImpl.yt_dl)
         else:
-            return False
+            download_mp3_playlist(yt_url, path, YtdlImpl.yt_dlp)
 
-    while True:
-        event, values = window.read()
+        layout_2 = [
+            [sg.Text('Your mp3 files were successfully downloaded!')],
+            [sg.Button('Close'), sg.Button('Close and open folder'), sg.Button('Return')]
+        ]
 
-        yt_url = window.Element(key_yt_url).get()
-        path = window.Element(key_path).get()
-        use_yt_dl_over_dlp = window.Element(key_is_yt_dl).get()
+        window = sg.Window("Download finished!", layout_2)
 
-        if event in (sg.WIN_CLOSED, 'Exit', 'Cancel'):
-            cancel()
-        elif event == key_yt_url:
-            window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
-        elif event == '...':
-            window.Element(key_path).update(load_path())
-            window.Element(key_start_button).update(disabled=not check_if_button_should_be_enabled())
-        elif event == key_start_button:
-            window.close()
-            break
+        while True:
+            event, values = window.read()
 
-    if use_yt_dl_over_dlp:
-        download_mp3_playlist(yt_url, path, YtdlImpl.yt_dl)
-    else:
-        download_mp3_playlist(yt_url, path, YtdlImpl.yt_dlp)
+            if event in (sg.WIN_CLOSED, 'Exit', 'Close'):
+                cancel()
+            elif event == 'Close and open folder':
+                open_and_exit(path)
+            elif event == 'Return':
+                break
 
-    layout_2 = [
-        [sg.Text('Your video was successfully downloaded!')],
-        [sg.Button('Close'), sg.Button('Close and open folder')]
-    ]
-
-    window = sg.Window("Download finished!", layout_2)
-
-    while True:
-        event, values = window.read()
-
-        if event in (sg.WIN_CLOSED, 'Exit', 'Close'):
-            cancel()
-        elif event == 'Close and open folder':
-            open_and_exit(path)
+        continue
 
 
 if __name__ == '__main__':
