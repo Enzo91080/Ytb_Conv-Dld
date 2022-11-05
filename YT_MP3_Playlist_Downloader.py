@@ -41,7 +41,7 @@ def download_mp3_playlist(playlist_url, destination_path, youtube_dl_impl):
         'ignoreerrors': True,
         'WriteThumbnail': True,
         'download_archive': destination_path + '/already_downloaded_tracks.txt',
-        'format': 'bestaudio/best',
+        'format': 'bestaudio/mp3',
         'outtmpl': destination_path + '/%(title)s.%(ext)s',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
@@ -78,7 +78,7 @@ def open_and_exit(url_destination):
 
 def main():
     while True:
-        sg.theme('DarkRed')
+        sg.theme('DarkRed1')
 
         key_yt_url = 'yt_url'
         key_path = 'path'
@@ -87,21 +87,21 @@ def main():
         key_is_yt_dlp = 'youtube-dlp (faster)'
 
         layout = [
-            [sg.Text('YT-playlist Link (or link to single YT-video):')],
+            [sg.Text('Url de la playlist ou de la vidéo')],
             [sg.Input(key=key_yt_url, size=(100, 1), enable_events=True)],
             [sg.Text('')],
-            [sg.Text('Please select the destination folder of your downloads:')],
-            [sg.Input(key=key_path, size=(100, 1), disabled=True, disabled_readonly_background_color='DarkRed',
+            [sg.Text('Destination du téléchargement')],
+            [sg.Input(key=key_path, size=(100, 1), disabled=True, disabled_readonly_background_color='#FF0000',
                       enable_events=True), sg.Button(button_text="...")],
             [sg.Text('')],
-            [sg.Text('Please select a youtube-dl implementation:')],
+            [sg.Text('Sélectionner le mode de téléchargement:')],
             [sg.Radio(key_is_yt_dl, "RADIO1", default=False, key=key_is_yt_dl, enable_events=True)],
             [sg.Radio(key_is_yt_dlp, "RADIO1", default=True, key=key_is_yt_dlp, enable_events=True)],
             [sg.Text('')],
             [sg.Button('Start', disabled=True, key=key_start_button, enable_events=True),
              sg.Button('Cancel')]
         ]
-        window = sg.Window('Youtube MP3 Playlist Downloader', layout)
+        window = sg.Window('Téléchargeur de Playlist', layout)
 
         def check_if_button_should_be_enabled():
             if window.Element(key_path).get() and window.Element(key_yt_url).get():
